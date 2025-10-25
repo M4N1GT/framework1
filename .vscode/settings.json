@@ -1,9 +1,8 @@
 {
     "java.project.sourcePaths": [
-        "."
+        "framework"
     ],
     "java.project.referencedLibraries": [
-        "d:\\itu\\L3\\S5\\testFramework\\testFramework\\webapp\\WEB-INF\\lib\\servlet-api.jar",
-        "jakarta.servlet-api_5.0.0.jar"
+        "framework/jakarta.servlet-api_5.0.0.jar"
     ]
 }
