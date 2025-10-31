@@ -11,9 +11,10 @@ set "TEST_DIR=D:\ProNaina\apache-tomcat-10.1.34\webapps\testFramework"
 set "SERVLET_JAR=%FRAMEWORK_DIR%jakarta.servlet-api_5.0.0.jar"
 set "WEBXML_FILE=%FRAMEWORK_DIR%web.xml"
 
-REM Création des dossiers de sortie du framework
+REM Création des dossiers de sortie du framework (avec nettoyage pour éviter les classes périmées)
 if not exist "%BUILD_DIR%" mkdir "%BUILD_DIR%"
-if not exist "%BUILD_DIR%\classes" mkdir "%BUILD_DIR%\classes"
+if exist "%BUILD_DIR%\classes" rmdir /S /Q "%BUILD_DIR%\classes"
+mkdir "%BUILD_DIR%\classes"
 
 REM Compilation récursive des sources Java du framework
 echo Compilation du framework...
@@ -50,7 +51,10 @@ REM Compilation de l'application test et copie des classes dans WEB-INF/classes
 echo Compilation de l'application test...
 set "APP_SRC=D:\framework\TP1\framework1\testFramework\src"
 set "APP_CLASSES=%TEST_DIR%\WEB-INF\classes"
-if not exist "%APP_CLASSES%" mkdir "%APP_CLASSES%"
+
+REM Nettoyage des classes de l'application pour éviter les artefacts périmés
+if exist "%APP_CLASSES%" rmdir /S /Q "%APP_CLASSES%"
+mkdir "%APP_CLASSES%"
 
 for /R "%APP_SRC%" %%f in (*.java) do (
     echo   Compilation de %%~nxf

@@ -4,12 +4,8 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 public class FrontServlet extends HttpServlet {
-
-    private Map<String, Class<?>> routeRegistry = new HashMap<>();
 
     @Override
     public void init() throws ServletException {
@@ -26,10 +22,6 @@ public class FrontServlet extends HttpServlet {
         System.out.println("[FrontServlet] Contrôleurs détectés (" + controllers.size() + "):");
         for (Class<?> c : controllers) {
             System.out.println(" - " + c.getName());
-            // Map URL to controller class (e.g., /Alpha -> AlphaController)
-            String name = c.getSimpleName().replace("Controller", "");
-            String urlPath = "/" + name;
-            routeRegistry.put(urlPath, c);
         }
     }
 
@@ -42,15 +34,30 @@ public class FrontServlet extends HttpServlet {
         String path = requestUri.substring(contextPath.length());
         System.out.println("Vous essayez d'acceder a : " + requestUri + " -> path: " + path);
 
-        // Find the controller for the requested URL (path within the context)
-        Class<?> controller = routeRegistry.get(path);
-        if (controller != null) {
-            resp.setContentType("text/html");
-            resp.getWriter().write("<h1>Classe correspondante : " + controller.getName() + "</h1>");
-        } else {
-            // Default response if no controller matches
-            resp.setContentType("text/html");
-            resp.getWriter().write("<h1>Aucune classe correspondante trouvée pour : " + path + "</h1>");
+        // Affiche la liste des contrôleurs à la racine de l'application (ex: http://host:port/testFramework/)
+        if ("/".equals(path) || path.isEmpty()) {
+            resp.setContentType("text/html;charset=UTF-8");
+            @SuppressWarnings("unchecked")
+            List<Class<?>> controllers = (List<Class<?>>) getServletContext().getAttribute("framework.controllers");
+            StringBuilder html = new StringBuilder();
+            html.append("<html><head><title>Annotated Controllers</title></head><body>");
+            html.append("<h1>Classes annotées @Controller</h1>");
+            if (controllers == null || controllers.isEmpty()) {
+                html.append("<p>Aucune classe trouvée.</p>");
+            } else {
+                html.append("<ul>");
+                for (Class<?> c : controllers) {
+                    html.append("<li>").append(c.getName()).append("</li>");
+                }
+                html.append("</ul>");
+            }
+            html.append("</body></html>");
+            resp.getWriter().write(html.toString());
+            return;
         }
+
+        // Pour les autres chemins, simple 404
+        resp.setContentType("text/html;charset=UTF-8");
+        resp.getWriter().write("<h1>404 - Page non trouvée: " + path + "</h1>");
     }
 }
