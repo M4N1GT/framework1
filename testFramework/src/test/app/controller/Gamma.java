@@ -1,4 +1,4 @@
 package test.app.controller;
 
-public class GammaPlain {
+public class Gamma {
 }

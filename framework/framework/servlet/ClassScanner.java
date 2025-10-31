@@ -63,4 +63,29 @@ public final class ClassScanner {
         String rel = abs.substring(root.length() + 1, abs.length() - ".class".length());
         return rel.replace(File.separatorChar, '.');
     }
+
+    public static String detectClasspath(ServletContext ctx) {
+        StringBuilder classpath = new StringBuilder();
+
+        // Add /WEB-INF/classes to the classpath
+        String classesPath = ctx.getRealPath("/WEB-INF/classes");
+        if (classesPath != null) {
+            classpath.append(classesPath).append(File.pathSeparator);
+        }
+
+        // Add all JAR files in /WEB-INF/lib to the classpath
+        String libPath = ctx.getRealPath("/WEB-INF/lib");
+        if (libPath != null) {
+            File libDir = new File(libPath);
+            File[] jarFiles = libDir.listFiles((dir, name) -> name.endsWith(".jar"));
+            if (jarFiles != null) {
+                for (File jar : jarFiles) {
+                    classpath.append(jar.getAbsolutePath()).append(File.pathSeparator);
+                }
+            }
+        }
+
+        // Return the constructed classpath
+        return classpath.toString();
+    }
 }

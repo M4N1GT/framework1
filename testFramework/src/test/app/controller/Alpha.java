@@ -3,5 +3,6 @@ package test.app.controller;
 import framework.annotation.Controller;
 
 @Controller
-public class BetaController {
+public class Alpha
+ {
 }
