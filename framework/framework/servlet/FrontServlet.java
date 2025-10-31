@@ -3,7 +3,6 @@ package framework.servlet;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-import java.util.List;
 
 public class FrontServlet extends HttpServlet {
 
@@ -16,13 +15,8 @@ public class FrontServlet extends HttpServlet {
             throw new ServletException("Paramètre de contexte 'app.basePackage' manquant (ex: test.app)");
         }
 
-        List<Class<?>> controllers = ClassScanner.findControllers(ctx, basePackage);
-        ctx.setAttribute("framework.controllers", controllers);
-
-        System.out.println("[FrontServlet] Contrôleurs détectés (" + controllers.size() + "):");
-        for (Class<?> c : controllers) {
-            System.out.println(" - " + c.getName());
-        }
+        // Removed ClassScanner logic
+        System.out.println("[FrontServlet] Initialisation terminée sans scanner de classes.");
     }
 
     @Override
