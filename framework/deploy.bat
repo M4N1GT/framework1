@@ -4,11 +4,12 @@ REM Script de déploiement Windows pour compiler le framework et préparer le pr
 REM ------------------------------------------------------------------------
 
 REM Définition des chemins (à adapter si besoin)
-set "FRAMEWORK_DIR=D:\framework\TP1\framework"
-set "BUILD_DIR=%FRAMEWORK_DIR%\build"
+REM Répertoire du script (framework/) pour rendre le script portable
+set "FRAMEWORK_DIR=%~dp0"
+set "BUILD_DIR=%FRAMEWORK_DIR%build"
 set "TEST_DIR=D:\ProNaina\apache-tomcat-10.1.34\webapps\testFramework"
-set "SERVLET_JAR=%FRAMEWORK_DIR%\jakarta.servlet-api_5.0.0.jar"
-set "WEBXML_FILE=%FRAMEWORK_DIR%\web.xml"
+set "SERVLET_JAR=%FRAMEWORK_DIR%jakarta.servlet-api_5.0.0.jar"
+set "WEBXML_FILE=%FRAMEWORK_DIR%web.xml"
 
 REM Création des dossiers de sortie du framework
 if not exist "%BUILD_DIR%" mkdir "%BUILD_DIR%"
@@ -18,7 +19,7 @@ REM Compilation récursive des sources Java du framework
 echo Compilation du framework...
 for /R "%FRAMEWORK_DIR%" %%f in (*.java) do (
     echo   Compilation de %%~nxf
-    javac -classpath "%SERVLET_JAR%" -d "%BUILD_DIR%\classes" "%%f"
+    javac -classpath "%SERVLET_JAR%;%BUILD_DIR%\classes" -d "%BUILD_DIR%\classes" "%%f"
     if errorlevel 1 (
         echo Erreur de compilation du fichier %%~nxf
         exit /b 1
@@ -43,6 +44,21 @@ if exist "%WEBXML_FILE%" (
     xcopy "%WEBXML_FILE%" "%TEST_DIR%\WEB-INF\" /Y >nul
 ) else (
     echo ATTENTION : web.xml introuvable dans %WEBXML_FILE%
+)
+
+REM Compilation de l'application test et copie des classes dans WEB-INF/classes
+echo Compilation de l'application test...
+set "APP_SRC=D:\framework\TP1\framework1\testFramework\src"
+set "APP_CLASSES=%TEST_DIR%\WEB-INF\classes"
+if not exist "%APP_CLASSES%" mkdir "%APP_CLASSES%"
+
+for /R "%APP_SRC%" %%f in (*.java) do (
+    echo   Compilation de %%~nxf
+    javac -classpath "%SERVLET_JAR%;%BUILD_DIR%\framework.jar" -d "%APP_CLASSES%" "%%f"
+    if errorlevel 1 (
+        echo Erreur de compilation du fichier %%~nxf
+        exit /b 1
+    )
 )
 
 REM Démarrage de Tomcat si un chemin est passé en paramètre
