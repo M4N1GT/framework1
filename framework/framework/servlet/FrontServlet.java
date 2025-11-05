@@ -4,6 +4,8 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
+import java.lang.reflect.Method;
+import framework.annotation.Methode;
 
 public class FrontServlet extends HttpServlet {
 
@@ -48,6 +50,30 @@ public class FrontServlet extends HttpServlet {
                 html.append("<ul>");
                 for (Class<?> c : controllers) {
                     html.append("<li>").append(c.getName()).append("</li>");
+                }
+                html.append("</ul>");
+
+                html.append("<h2>Methodes annotées @Methode</h2>");
+                html.append("<ul>");
+                for (Class<?> c : controllers) {
+                    for (Method m : c.getDeclaredMethods()) {
+                        if (m.isAnnotationPresent(Methode.class)) {
+                            Methode ann = m.getAnnotation(Methode.class);
+                            String url = ann.url();
+                            String link = contextPath + (url.startsWith("/") ? url : "/" + url);
+                            html.append("<li>")
+                                .append(c.getName())
+                                .append("::")
+                                .append(m.getName())
+                                .append(" -> ")
+                                .append("<a href=\"")
+                                .append(link)
+                                .append("\">")
+                                .append(url)
+                                .append("</a>")
+                                .append("</li>");
+                        }
+                    }
                 }
                 html.append("</ul>");
             }
