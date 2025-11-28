@@ -82,7 +82,51 @@ public class FrontServlet extends HttpServlet {
             return;
         }
 
-        // Pour les autres chemins, simple 404
+        @SuppressWarnings("unchecked")
+        List<Class<?>> controllers = (List<Class<?>>) getServletContext().getAttribute("framework.controllers");
+        if (controllers != null) {
+            for (Class<?> c : controllers) {
+                for (Method m : c.getDeclaredMethods()) {
+                    if (m.isAnnotationPresent(Methode.class)) {
+                        Methode ann = m.getAnnotation(Methode.class);
+                        String url = ann.url();
+                        String normalized = url.startsWith("/") ? url : "/" + url;
+                        if (normalized.equals(path)) {
+                            try {
+                                Object instance = c.getDeclaredConstructor().newInstance();
+                                m.setAccessible(true);
+                                Class<?>[] paramTypes = m.getParameterTypes();
+                                Object result;
+                                if (paramTypes.length == 0) {
+                                    result = m.invoke(instance);
+                                } else if (paramTypes.length == 2
+                                        && HttpServletRequest.class.isAssignableFrom(paramTypes[0])
+                                        && HttpServletResponse.class.isAssignableFrom(paramTypes[1])) {
+                                    result = m.invoke(instance, req, resp);
+                                } else {
+                                    resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                                    resp.setContentType("text/plain;charset=UTF-8");
+                                    resp.getWriter().write("Signature non supportée pour " + c.getName() + "::" + m.getName());
+                                    return;
+                                }
+
+                                if (!resp.isCommitted()) {
+                                    resp.setContentType("text/plain;charset=UTF-8");
+                                    resp.getWriter().write("OK: " + c.getName() + "::" + m.getName());
+                                }
+                                return;
+                            } catch (Exception e) {
+                                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                                resp.setContentType("text/plain;charset=UTF-8");
+                                resp.getWriter().write("Erreur lors de l'exécution de " + c.getName() + "::" + m.getName() + " -> " + e.getClass().getSimpleName() + ": " + e.getMessage());
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         resp.setContentType("text/html;charset=UTF-8");
         resp.getWriter().write("<h1>404 - Page non trouvée: " + path + "</h1>");
     }
